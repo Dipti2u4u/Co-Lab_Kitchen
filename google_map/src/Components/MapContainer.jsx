@@ -1,91 +1,106 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Map, GoogleApiWrapper, Marker } from 'google-maps-react';
+import { useNavigate } from 'react-router-dom';
 
 const MapContainer = (props) => {
   const [userLocation, setUserLocation] = useState(null);
-  const [permissionDenied, setPermissionDenied] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    if (navigator.permissions && navigator.geolocation) {
-      navigator.permissions
-        .query({ name: 'geolocation' })
-        .then((permissionStatus) => {
-          if (permissionStatus.state === 'granted') {
-            navigator.geolocation.getCurrentPosition(
-              (position) => {
-                setUserLocation({
-                  lat: position.coords.latitude,
-                  lng: position.coords.longitude,
-                });
-              },
-              (error) => {
-                console.error('Error getting user location:', error);
-              }
-            );
-          } else if (permissionStatus.state === 'denied') {
-            setPermissionDenied(true);
-          } else {
-            permissionStatus.onchange = () => {
-              if (permissionStatus.state === 'granted') {
-                navigator.geolocation.getCurrentPosition(
-                  (position) => {
-                    setUserLocation({
-                      lat: position.coords.latitude,
-                      lng: position.coords.longitude,
-                    });
-                  },
-                  (error) => {
-                    console.error('Error getting user location:', error);
-                  }
-                );
-              } else if (permissionStatus.state === 'denied') {
-                setPermissionDenied(true);
-              }
-            };
-          }
-        })
-        .catch((error) => console.error('Error checking geolocation permission:', error));
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setUserLocation({ lat: latitude, lng: longitude });
+        },
+        (error) => {
+          console.error('Error getting user location:', error);
+        }
+      );
     } else {
-      console.error('Geolocation is not supported by this browser.');
+      console.log('Geolocation is not supported by this browser.');
     }
-  }, []);
 
-  const mapStyles = {
-    width: '100%',
-    height: '400px',
-  };
+    const locations = [
+      { id: 1, title: 'Location A', lat: 20.250895, lng: 85.756910 },
+      { id: 2, title: 'Location B', lat: 20.260895, lng: 85.746910 },
+    ];
+
+    locations.forEach(location => {
+      const marker = new window.google.maps.Marker({
+        position: { lat: location.lat, lng: location.lng },
+        map: props.google.map,
+        title: location.title,
+      });
+
+      marker.addListener('click', () => {
+        navigate(`/location/${location.id}`);
+      });
+    });
+  }, [navigate, props.google.map]);
 
   return (
-    <div>
-      {permissionDenied ? (
-        <p>Location permission denied. Please enable it in your browser settings to view the map.</p>
-      ) : (
-        <Map
-          google={props.google}
-          zoom={14}
-          style={mapStyles}
-          initialCenter={{
-            lat: userLocation ? userLocation.lat : 0, // Default latitude
-            lng: userLocation ? userLocation.lng : 0, // Default longitude
+    <Map
+      google={props.google}
+      zoom={userLocation ? 15 : 12}
+      style={{ width: '100%', height: '400px' }}
+      initialCenter={{
+        lat: 20.240895,
+        lng: 85.746910,
+      }}
+      center={{
+        lat: userLocation?.lat || 20.240895,
+        lng: userLocation?.lng || 85.746910,
+      }}
+    >
+      <Marker
+        title={'Location A'}
+        position={{ lat: 20.250895, lng: 85.756910 }}
+        icon={{
+          url: require("../Components/images/dish_marker.png"),
+          anchor: new window.google.maps.Point(32, 32),
+          scaledSize: new window.google.maps.Size(60, 60)
+        }}
+        onClick={() => navigate(`/location/1`)}
+      />
+      <Marker
+        title={'Location B'}
+        position={{ lat: 20.260895, lng: 85.746910 }}
+        icon={{
+          url: require("../Components/images/dish_marker.png"),
+          anchor: new window.google.maps.Point(32, 32),
+          scaledSize: new window.google.maps.Size(60, 60)
+        }}
+        onClick={() => navigate(`/location/2`)}
+      />
+
+      {userLocation && (
+        <Marker
+          title={'My Location'}
+          position={{ lat: userLocation.lat, lng: userLocation.lng }}
+          icon={{
+            url: require("../Components/images/user_marker.png"),
+            anchor: new window.google.maps.Point(32, 32),
+            scaledSize: new window.google.maps.Size(60, 60)
           }}
-        >
-          {userLocation && (
-            <Marker
-              position={{
-                lat: userLocation.lat,
-                lng: userLocation.lng,
-              }}
-              title="Your Location"
-            />
-          )}
-        </Map>
+        />
       )}
-    </div>
+    </Map>
   );
 };
 
 export default GoogleApiWrapper({
   apiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
 })(MapContainer);
+
+
+
+
+
+
+
+
+
+
 
 
