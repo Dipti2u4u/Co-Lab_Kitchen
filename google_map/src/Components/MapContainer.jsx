@@ -24,6 +24,7 @@ const MapContainer = (props) => {
     const locations = [
       { id: 1, title: 'Location A', lat: 20.250895, lng: 85.756910 },
       { id: 2, title: 'Location B', lat: 20.260895, lng: 85.746910 },
+      { id: 3, title: 'Location C', lat: 20.261066, lng: 85.7364007 }
     ];
 
     locations.forEach(location => {
@@ -74,6 +75,17 @@ const MapContainer = (props) => {
         onClick={() => navigate(`/location/2`)}
       />
 
+       <Marker
+        title={'Location C'}
+        position={{ lat: 20.261066, lng: 85.7364007 }}
+        icon={{
+          url: require("../Components/images/dish_marker.png"),
+          anchor: new window.google.maps.Point(32, 32),
+          scaledSize: new window.google.maps.Size(60, 60)
+        }}
+        onClick={() => navigate(`/location/2`)}
+      />
+
       {userLocation && (
         <Marker
           title={'My Location'}
@@ -92,6 +104,9 @@ const MapContainer = (props) => {
 export default GoogleApiWrapper({
   apiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
 })(MapContainer);
+
+
+
 
 
 
