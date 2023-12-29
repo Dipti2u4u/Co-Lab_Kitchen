@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Map, GoogleApiWrapper, Marker } from "google-maps-react";
 import { useNavigate } from "react-router-dom";
 import useUserLocation from "./GetUserLocation";
+import { FilterOutlined } from '@ant-design/icons'; 
 
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
   const earthRadius = 6371; 
@@ -18,7 +19,7 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
 
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-  const distance = earthRadius * c; // Distance in kilometers
+  const distance = earthRadius * c; 
   return distance;
 };
 
@@ -39,7 +40,8 @@ const MapContainer = (props) => {
   );
 
   const [filteredLocations, setFilteredLocations] = useState([]);
-  const [distanceRange, setDistanceRange] = useState(5); // Initial range set to 5km
+  const [distanceRange, setDistanceRange] = useState(5);
+  const [showFilter, setShowFilter] = useState(false); 
 
   useEffect(() => {
     if (userLocation) {
@@ -60,15 +62,28 @@ const MapContainer = (props) => {
     navigate(`/location/${locationId}`);
   };
 
+  const handleFilterToggle = () => {
+    setShowFilter((prevState) => !prevState);
+  };
+
   return (
     <div>
-      <input
-        type="range"
-        min={0}
-        max={5}
-        value={distanceRange}
-        onChange={(e) => setDistanceRange(Number(e.target.value))}
-      />
+      <div className="filter-icon" onClick={handleFilterToggle}>
+        <FilterOutlined style={{ fontSize: '20px', cursor: 'pointer' }} />
+      </div>
+
+      {showFilter && (
+        <div className="filter-component">
+          <input
+            type="range"
+            min={0}
+            max={5}
+            value={distanceRange}
+            onChange={(e) => setDistanceRange(Number(e.target.value))}
+          />
+        </div>
+      )}
+
       <Map
         google={props.google}
         zoom={userLocation ? 15 : 12}
@@ -89,7 +104,7 @@ const MapContainer = (props) => {
               anchor: new props.google.maps.Point(32, 32),
               scaledSize: new props.google.maps.Size(60, 60),
             }}
-            onClick={() => handleLocationClick(location.id)}
+            onClick={() => handleLocationClick(location.id)} 
           />
         ))}
 
